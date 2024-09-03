@@ -1,7 +1,7 @@
 using Godot;
 using System;
 using System.Diagnostics.Tracing;
-using System.Threading;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks.Dataflow;
 public partial class Char : CharacterBody2D
 {
@@ -26,6 +26,11 @@ public partial class Char : CharacterBody2D
 		if (IsOnFloor())
 			playerSprite.Animation = "move";
 	}
+	private void moveAttackSprite (Vector2 velocity, AnimatedSprite2D playerSprite)
+	{
+		velocity.X *= 2.0f;
+		playerSprite.Animation = "moveAttack";
+	}
 	public override void _PhysicsProcess(double delta)
 	{
 		AnimatedSprite2D playerSprite = GetNode<AnimatedSprite2D>("playerSprite");
@@ -48,19 +53,16 @@ public partial class Char : CharacterBody2D
 		// Get the input direction and handle the movement/deceleration.
 		// As good practice, you should replace UI actions with custom gameplay actions.
 		Vector2 direction = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-
-	/* 	if (Input.IsKeyPressed(Key.Down) && direction.X == 0)
-		{
-			playerSprite.Animation = "crounch";
-			playerSprite.Frame = 0;
-			playerSprite.Frame = 1;
-			playerSprite.Frame = 2;
-		} */
-		if (direction.X != 0)
+		if (Input.IsKeyPressed(Key.Right) || Input.IsKeyPressed(Key.Left))
 		{
 			velocity.X = direction.X * Speed;
-			moveSpriteHandler(direction, velocity, playerSprite);
+			if (Input.IsKeyPressed(Key.Z))
+				moveAttackSprite(velocity, playerSprite);
+			else
+				moveSpriteHandler(direction, velocity, playerSprite);
 		}
+		else if (Input.IsKeyPressed(Key.Z))
+			playerSprite.Animation = "attack";
 		else
 		{
 			velocity.X = Mathf.MoveToward(Velocity.X, 0, Speed);
